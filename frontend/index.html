@@ -1,0 +1,113 @@
+<div class="container mt-5">
+    <h1 class="text-center mb-4">🤖 AI 实习推荐系统</h1>
+
+    <!-- 搜索区域 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>🔍 搜索岗位</h5>
+            <div class="input-group">
+                <input type="text" id="search-input" class="form-control" placeholder="输入职位关键词...">
+                <button id="search-btn" class="btn btn-primary">搜索</button>
+            </div>
+        </div>
+    </div>
+    <!-- 简历上传区域 -->
+    <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-person"></i> AI 简历分析
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">上传你的简历（支持 .txt, .pdf），AI 将自动分析并推荐匹配岗位</p>
+
+            <!-- 上传方式选择 -->
+            <ul class="nav nav-tabs mb-3" id="resumeTab">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#upload-tab">
+                        📁 上传文件
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#paste-tab">
+                        📋 粘贴文本
+                    </button>
+                </li>
+            </ul>
+
+            <!-- 文件上传面板 -->
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="upload-tab">
+                    <div class="mb-3">
+                        <label class="form-label">选择简历文件</label>
+                        <input type="file" class="form-control" id="resume-file"
+                               accept=".txt,.pdf,.doc,.docx">
+                        <div class="form-text">支持 txt, pdf, word 格式，建议使用 txt 格式</div>
+                    </div>
+                </div>
+
+                <!-- 文本粘贴面板 -->
+                <div class="tab-pane fade" id="paste-tab">
+                    <div class="mb-3">
+                        <label class="form-label">粘贴简历内容</label>
+                        <textarea class="form-control" id="resume-text" rows="5"
+                                  placeholder="粘贴你的简历文本内容..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能标签（可选） -->
+            <div class="mb-3">
+                <label class="form-label">🏷️ 你的技能标签（可多选）</label>
+                <div class="d-flex flex-wrap gap-2" id="skill-tags">
+                    <span class="badge bg-light text-dark skill-tag" onclick="toggleSkill(this)">Java</span>
+                    <span class="badge bg-light text-dark skill-tag" onclick="toggleSkill(this)">Python</span>
+                    <span class="badge bg-light text-dark skill-tag" onclick="toggleSkill(this)">Spring Boot</span>
+                    <span class="badge bg-light text-dark skill-tag" onclick="toggleSkill(this)">MySQL</span>
+                    <span class="badge bg-light text-dark skill-tag" onclick="toggleSkill(this)">Vue.js</span>
+                    <span class="badge bg-light text-dark skill-tag" onclick="toggleSkill(this)">Docker</span>
+                </div>
+            </div>
+
+            <!-- 分析按钮 -->
+            <button class="btn btn-gradient w-100" onclick="analyzeResume()">
+                <i class="bi bi-robot"></i> AI 分析简历并推荐
+            </button>
+
+            <!-- 加载状态 -->
+            <div class="text-center mt-3" id="analyze-loading" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">分析中...</span>
+                </div>
+                <p class="text-muted mt-2">AI 正在分析你的简历，请稍候...</p>
+            </div>
+        </div>
+    </div>
+    <!-- AI 推荐区域 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>🧠 AI 智能推荐</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" id="skills-input" class="form-control mb-2" placeholder="输入你的技能 (如: Java, Python)">
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="city-input" class="form-control mb-2" placeholder="城市 (如: 北京)">
+                </div>
+            </div>
+            <button id="recommend-btn" class="btn btn-success">获取 AI 推荐</button>
+        </div>
+    </div>
+
+    <!-- 结果区域 -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <h5 id="result-title">所有岗位</h5>
+            <button class="btn btn-sm btn-outline-secondary" onclick="refreshPage()">刷新</button>
+        </div>
+        <div class="card-body">
+            <!-- 岗位列表容器 -->
+            <div id="job-list" class="row"></div>
+        </div>
+    </div>
+</div>
