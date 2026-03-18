@@ -1,23 +1,190 @@
-/* 卡片阴影 */
+/* 全局样式 */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* 容器 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 卡片样式 */
 .card {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 列表项样式 */
-.list-group-item {
+    border-radius: 15px;
     border: none;
-    margin-bottom: 10px;
-    border-radius: 8px !important;
-    transition: transform 0.2s;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.list-group-item:hover {
+.card:hover {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 15px 20px;
+}
+
+/* 岗位卡片 */
+.job-card {
+    transition: all 0.3s;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 15px;
+    height: 100%;
+    background: white;
+}
+
+.job-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 渐变按钮 */
+.btn-gradient {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+}
+
+.btn-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 7px 20px rgba(37, 117, 252, 0.3);
+    color: white;
+    background: linear-gradient(45deg, #2575fc, #6a11cb);
 }
 
-/* 职位标题 */
-.job-title {
-    font-weight: bold;
-    color: #007bff;
+/* 技能标签 */
+.skill-tag {
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: inline-block;
+    margin: 2px;
+    user-select: none;
+}
+
+.skill-tag:hover {
+    transform: scale(1.05);
+}
+
+.skill-tag.selected {
+    background: linear-gradient(45deg, #6a11cb, #2575fc) !important;
+    color: white !important;
+    box-shadow: 0 3px 10px rgba(106, 17, 203, 0.3);
+}
+
+/* 分数徽章 */
+.badge-score {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+}
+
+.score-high {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+}
+
+.score-medium {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+    color: black;
+}
+
+.score-low {
+    background: linear-gradient(45deg, #dc3545, #e83e8c);
+    color: white;
+}
+
+/* 加载动画 */
+#analyze-loading {
+    animation: fadeIn 0.3s;
+    display: none;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 表单样式 */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 10px 15px;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: #6a11cb;
+    box-shadow: 0 0 0 0.25rem rgba(106, 17, 203, 0.25);
+}
+
+/* 标签页 */
+.nav-tabs .nav-link {
+    border-radius: 8px 8px 0 0;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+}
+
+/* 结果区域 */
+#job-list {
+    animation: fadeIn 0.5s;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .job-card {
+        margin-bottom: 10px;
+    }
+
+    .btn-gradient {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
 }
