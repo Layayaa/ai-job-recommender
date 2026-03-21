@@ -3,6 +3,7 @@ let selectedSkills = new Set();
 
 // DOM 加载完成
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ 页面加载完成，开始初始化...');
     initApp();
 });
 
@@ -16,39 +17,63 @@ function initApp() {
 
     // 初始化技能标签
     initSkillTags();
+
+    console.log('✅ 应用初始化完成');
 }
 
 // 绑定所有事件
 function bindEvents() {
+    console.log('绑定事件...');
+
     // 搜索按钮
-    document.getElementById('search-btn').addEventListener('click', handleSearch);
+    const searchBtn = document.getElementById('search-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', handleSearch);
+        console.log('✅ 搜索按钮事件已绑定');
+    }
 
     // 推荐按钮
-    document.getElementById('recommend-btn').addEventListener('click', handleAIRecommend);
+    const recommendBtn = document.getElementById('recommend-btn');
+    if (recommendBtn) {
+        recommendBtn.addEventListener('click', handleAIRecommend);
+        console.log('✅ AI推荐按钮事件已绑定');
+    }
 
     // 搜索输入框回车
-    document.getElementById('search-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleSearch();
-        }
-    });
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+    }
 
     // 技能输入框回车
-    document.getElementById('skills-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleAIRecommend();
-        }
-    });
+    const skillsInput = document.getElementById('skills-input');
+    if (skillsInput) {
+        skillsInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleAIRecommend();
+            }
+        });
+    }
 
     // 城市输入框回车
-    document.getElementById('city-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleAIRecommend();
-        }
-    });
+    const cityInput = document.getElementById('city-input');
+    if (cityInput) {
+        cityInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleAIRecommend();
+            }
+        });
+    }
 
     // 文件上传变化
-    document.getElementById('resume-file').addEventListener('change', handleFileChange);
+    const resumeFile = document.getElementById('resume-file');
+    if (resumeFile) {
+        resumeFile.addEventListener('change', handleFileChange);
+    }
 
     // 标签页切换
     const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
@@ -65,6 +90,7 @@ function initSkillTags() {
             toggleSkill(this);
         });
     });
+    console.log('✅ 技能标签初始化完成，数量:', skillTags.length);
 }
 
 // 切换技能选择
@@ -78,6 +104,8 @@ function toggleSkill(element) {
         selectedSkills.add(skill);
         element.classList.add('selected');
     }
+
+    console.log('当前选中的技能:', Array.from(selectedSkills));
 }
 
 // 获取选中的技能数组
@@ -95,8 +123,10 @@ function handleFileChange(e) {
         // 更新界面提示
         const fileInput = document.getElementById('resume-file');
         const hint = fileInput.nextElementSibling;
-        hint.textContent = `已选择: ${fileName} (${fileSize}KB)`;
-        hint.classList.add('text-success');
+        if (hint) {
+            hint.textContent = `已选择: ${fileName} (${fileSize}KB)`;
+            hint.classList.add('text-success');
+        }
     }
 }
 
@@ -117,9 +147,11 @@ async function analyzeResume() {
     // 获取简历内容
     if (document.querySelector('#upload-tab').classList.contains('active') && fileInput.files.length > 0) {
         const file = fileInput.files[0];
+        console.log('读取文件:', file.name);
         resumeContent = await readFileAsText(file);
     } else if (document.querySelector('#paste-tab').classList.contains('active')) {
         resumeContent = textArea.value.trim();
+        console.log('读取粘贴文本，长度:', resumeContent.length);
     }
 
     if (!resumeContent) {
@@ -137,6 +169,7 @@ async function analyzeResume() {
     showAlert('AI正在分析你的简历，请稍候...', 'info');
 
     try {
+        console.log('发送简历分析请求...');
         const response = await fetch('/api/analyze-resume', {
             method: 'POST',
             headers: {
@@ -150,10 +183,12 @@ async function analyzeResume() {
 
         if (!response.ok) {
             const error = await response.text();
+            console.error('API错误:', error);
             throw new Error(`API错误: ${error}`);
         }
 
         const data = await response.json();
+        console.log('简历分析结果:', data);
 
         if (data.error) {
             throw new Error(data.error);
@@ -179,11 +214,17 @@ async function handleSearch() {
         return;
     }
 
+    console.log('搜索岗位，关键词:', keyword);
+
     try {
         const response = await fetch(`/api/search-jobs?keyword=${encodeURIComponent(keyword)}`);
+        console.log('搜索响应状态:', response.status);
+
         if (!response.ok) throw new Error('搜索失败');
 
         const jobs = await response.json();
+        console.log('搜索结果:', jobs);
+
         updateJobList(jobs, `搜索"${keyword}"的结果`);
         showAlert(`找到 ${jobs.length} 个相关岗位`, 'info');
 
@@ -203,15 +244,21 @@ async function handleAIRecommend() {
         return;
     }
 
+    console.log('AI推荐，技能:', skills, '城市:', city);
+
     try {
         const params = new URLSearchParams();
         if (skills) params.append('skills', skills);
         if (city) params.append('city', city);
 
         const response = await fetch(`/api/ai-recommend?${params}`);
+        console.log('AI推荐响应状态:', response.status);
+
         if (!response.ok) throw new Error('推荐失败');
 
         const recommendations = await response.json();
+        console.log('AI推荐结果:', recommendations);
+
         displayJobRecommendations(recommendations);
 
         const msg = skills && city ?
@@ -233,6 +280,7 @@ async function loadAllJobs() {
         if (!response.ok) throw new Error('加载失败');
 
         const jobs = await response.json();
+        console.log('加载所有岗位:', jobs);
         displayJobRecommendations(jobs);
 
     } catch (error) {
@@ -242,8 +290,15 @@ async function loadAllJobs() {
 
 // 显示岗位推荐
 function displayJobRecommendations(data) {
+    console.log('开始渲染岗位推荐...', data);
+
     const jobList = document.getElementById('job-list');
     const resultTitle = document.getElementById('result-title');
+
+    if (!jobList) {
+        console.error('错误: 找不到 job-list 元素');
+        return;
+    }
 
     // 更新标题
     if (data.candidate_name && data.candidate_name !== '未知') {
@@ -278,16 +333,17 @@ function displayJobRecommendations(data) {
         const jobCard = createJobCard(job, scoreClass, index);
         jobList.insertAdjacentHTML('beforeend', jobCard);
     });
+
+    console.log(`✅ 成功渲染 ${data.recommended_jobs.length} 个岗位`);
 }
 
 // 创建岗位卡片
 function createJobCard(job, scoreClass, index) {
     const score = job.match_score || 0;
-    const delay = index * 100;
 
     return `
-        <div class="col-lg-4 col-md-6 mb-4" style="animation-delay: ${delay}ms">
-            <div class="card job-card" style="animation: fadeIn 0.5s">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card job-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <h5 class="card-title mb-0" style="flex: 1">${escapeHtml(job.job_title || '未命名岗位')}</h5>
@@ -330,9 +386,7 @@ function createJobCard(job, scoreClass, index) {
                         <small class="text-muted">
                             <i class="bi bi-calendar me-1"></i> ${job.created_at ? formatDate(job.created_at) : '未知'}
                         </small>
-                        <button class="btn btn-sm btn-outline-primary" onclick="applyJob(${job.id || index})">
-                            申请
-                        </button>
+                        <small class="text-muted">AI 智能推荐</small>
                     </div>
                 </div>
             </div>
@@ -362,15 +416,6 @@ function readFileAsText(file) {
             reader.readAsDataURL(file);
         }
     });
-}
-
-// 申请岗位
-function applyJob(jobId) {
-    showAlert(`正在申请岗位 #${jobId}...`, 'info');
-    // TODO: 实现申请逻辑
-    setTimeout(() => {
-        showAlert('申请已提交，HR会尽快联系您！', 'success');
-    }, 1500);
 }
 
 // 显示提示
@@ -440,5 +485,4 @@ function refreshPage() {
 // 全局导出函数
 window.analyzeResume = analyzeResume;
 window.refreshPage = refreshPage;
-window.applyJob = applyJob;
 window.toggleSkill = toggleSkill;
