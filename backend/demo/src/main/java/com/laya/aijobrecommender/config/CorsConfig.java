@@ -9,10 +9,15 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("*") // 允许所有源（生产环境请指定具体域名）
+                .allowedOrigins(
+                        "http://localhost:63342",  // WebStorm 开发服务器
+                        "http://localhost:5173",   // Vite 开发服务器
+                        "http://localhost:3000",   // React 开发服务器
+                        "http://localhost:8080"    // Spring Boot 后端
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(false)
-                .maxAge(3600);
+                .allowCredentials(true)  // ✅ 允许携带凭证（Cookie、Authorization等）
+                .maxAge(3600);  // 预检请求缓存1小时
     }
 }

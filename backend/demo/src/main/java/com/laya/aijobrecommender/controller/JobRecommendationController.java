@@ -134,7 +134,7 @@ public class JobRecommendationController {
 
     // 4. 简历分析接口（保持原有逻辑）
     @PostMapping("/analyze-resume")
-    public String analyzeResume(@RequestBody ResumeAnalysisRequest request) {
+    public SearchResponse analyzeResume(@RequestBody ResumeAnalysisRequest request) {
         System.out.println("📄 收到简历分析请求");
         System.out.println("简历内容长度: " + request.getResumeText().length());
         System.out.println("技能: " + String.join(", ", request.getSkills()));
@@ -142,19 +142,19 @@ public class JobRecommendationController {
         // 这里可以添加简历分析逻辑，调用Dify工作流等
         // 暂时返回模拟数据
 
-        return "{" +
-                "\"candidate_name\": \"张三\"," +
-                "\"recommended_jobs\": [" +
-                "  {" +
-                "    \"job_title\": \"Java后端开发实习生\"," +
-                "    \"match_score\": 85," +
-                "    \"reason\": \"技能匹配度高，简历中的Java、Spring Boot与岗位要求相符\"," +
-                "    \"company\": \"字节跳动\"," +
-                "    \"location\": \"北京\"," +
-                "    \"salary\": \"300-500元/天\"" +
-                "  }" +
-                "]" +
-                "}";
+        List<SearchResponse.JobInfo> jobInfos = new ArrayList<>();
+        jobInfos.add(new SearchResponse.JobInfo(
+                "Java后端开发实习生",
+                85,
+                "技能匹配度高，简历中的Java、Spring Boot与岗位要求相符",
+                "字节跳动",
+                "北京",
+                "300-500元/天",
+                "熟悉Java基础，熟练使用Spring Boot、MyBatis框架",
+                LocalDateTime.now().format(DATE_FORMATTER)
+        ));
+
+        return new SearchResponse("张三", jobInfos);
     }
 
     // ========== 辅助方法 ==========

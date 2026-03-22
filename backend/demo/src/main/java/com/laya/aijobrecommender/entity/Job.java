@@ -15,15 +15,25 @@ public class Job {
     private String description;
     private String company;
     private String location;
-    private LocalDateTime postedDate;
+    private String requirements;
+    private LocalDateTime created_at;
 
-    // 构造方法、getter、setter 省略（你可以用 Lombok 或手动补全）
+    // 构造方法
     public Job() {}
 
-    // getter/setter 示例
+    // getter/setter
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
-    // ... 其他字段同理
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getCompany() { return company; }
+    public void setCompany(String company) { this.company = company; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public String getRequirements() { return requirements; }
+    public void setRequirements(String requirements) { this.requirements = requirements; }
+    public LocalDateTime getCreated_at() { return created_at; }
+    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
 }

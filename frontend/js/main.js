@@ -175,6 +175,7 @@ async function analyzeResume() {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',  // ✅ 新增：允许发送凭证
             body: JSON.stringify({
                 resumeText: resumeContent,
                 skills: getSelectedSkillsArray()
@@ -217,7 +218,9 @@ async function handleSearch() {
     console.log('搜索岗位，关键词:', keyword);
 
     try {
-        const response = await fetch(`/api/search-jobs?keyword=${encodeURIComponent(keyword)}`);
+        const response = await fetch(`/api/search-jobs?keyword=${encodeURIComponent(keyword)}`, {
+            credentials: 'include'  // ✅ 新增：允许发送凭证
+        });
         console.log('搜索响应状态:', response.status);
 
         if (!response.ok) throw new Error('搜索失败');
@@ -251,7 +254,9 @@ async function handleAIRecommend() {
         if (skills) params.append('skills', skills);
         if (city) params.append('city', city);
 
-        const response = await fetch(`/api/ai-recommend?${params}`);
+        const response = await fetch(`/api/ai-recommend?${params}`, {
+            credentials: 'include'  // ✅ 新增：允许发送凭证
+        });
         console.log('AI推荐响应状态:', response.status);
 
         if (!response.ok) throw new Error('推荐失败');
@@ -276,16 +281,76 @@ async function handleAIRecommend() {
 // 加载所有岗位
 async function loadAllJobs() {
     try {
-        const response = await fetch('/api/jobs');
-        if (!response.ok) throw new Error('加载失败');
+        console.log('开始加载所有岗位...');
+        const response = await fetch('/api/jobs', {
+            credentials: 'include'  // ✅ 新增：允许发送凭证
+        });
+        console.log('加载响应状态:', response.status);
 
-        const jobs = await response.json();
-        console.log('加载所有岗位:', jobs);
-        displayJobRecommendations(jobs);
+        if (!response.ok) {
+            console.error('HTTP错误:', response.status, response.statusText);
+            throw new Error(`加载失败: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('加载成功，数据:', data);
+
+        // 检查数据格式
+        if (!data || typeof data !== 'object') {
+            console.error('数据格式错误，不是对象:', data);
+            showAlert('数据格式错误，请检查后端服务', 'danger');
+            return;
+        }
+
+        displayJobRecommendations(data);
 
     } catch (error) {
         console.error('加载岗位失败:', error);
+        showAlert('加载岗位失败: ' + error.message, 'danger');
+        // 显示模拟数据，以便前端能够正常显示
+        showMockData();
     }
+}
+
+// 显示模拟数据
+function showMockData() {
+    const mockData = {
+        candidate_name: "系统推荐",
+        recommended_jobs: [
+            {
+                job_title: "Java开发工程师",
+                match_score: 85,
+                reason: "系统推荐岗位",
+                company: "阿里巴巴",
+                location: "杭州",
+                salary: "300-600元/天",
+                requirements: "熟悉Java基础，熟练使用Spring Boot、MyBatis框架",
+                created_at: "2026-03-22"
+            },
+            {
+                job_title: "前端开发工程师",
+                match_score: 80,
+                reason: "系统推荐岗位",
+                company: "字节跳动",
+                location: "北京",
+                salary: "300-600元/天",
+                requirements: "熟悉Vue.js或React，熟练掌握HTML/CSS/JavaScript",
+                created_at: "2026-03-22"
+            },
+            {
+                job_title: "Python开发工程师",
+                match_score: 75,
+                reason: "系统推荐岗位",
+                company: "腾讯",
+                location: "深圳",
+                salary: "300-600元/天",
+                requirements: "熟练使用Python，熟悉Django或Flask框架",
+                created_at: "2026-03-22"
+            }
+        ]
+    };
+    displayJobRecommendations(mockData);
+    showAlert('后端服务未连接，显示模拟数据', 'warning');
 }
 
 // 显示岗位推荐
@@ -312,8 +377,22 @@ function displayJobRecommendations(data) {
     // 清空现有内容
     jobList.innerHTML = '';
 
-    // 检查数据
-    if (!data.recommended_jobs || data.recommended_jobs.length === 0) {
+    // 检查数据格式
+    if (!data.recommended_jobs || !Array.isArray(data.recommended_jobs)) {
+        console.warn('数据格式不正确，缺少 recommended_jobs 数组:', data);
+        jobList.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h4 class="mt-3 text-muted">数据格式错误</h4>
+                <p class="text-muted">后端返回的数据格式不正确</p>
+                <button class="btn btn-sm btn-outline-secondary" onclick="loadAllJobs()">重新加载</button>
+            </div>
+        `;
+        return;
+    }
+
+    // 检查是否有推荐岗位
+    if (data.recommended_jobs.length === 0) {
         jobList.innerHTML = `
             <div class="col-12 text-center py-5">
                 <i class="bi bi-inbox display-1 text-muted"></i>
