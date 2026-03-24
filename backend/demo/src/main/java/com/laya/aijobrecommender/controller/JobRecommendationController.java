@@ -1,51 +1,69 @@
 package com.laya.aijobrecommender.controller;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class JobRecommendationController {
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
-    // 内存数据库，存储岗位信息
-    private List<Map<String, Object>> jobsData;
-    
-    // 构造函数，初始化模拟数据
+
+    // 构造函数，初始化数据库表
     public JobRecommendationController() {
-        initJobsData();
+        initDatabase();
     }
-    
-    // 初始化模拟数据
-    private void initJobsData() {
-        jobsData = new ArrayList<>();
-        
-        // 添加模拟岗位数据
-        addJob("Java开发工程师", "阿里巴巴", "杭州", "熟悉Java基础，熟练使用Spring Boot、MyBatis框架", "2026-03-22 10:00:00");
-        addJob("前端开发工程师", "字节跳动", "北京", "熟悉Vue.js或React，熟练掌握HTML/CSS/JavaScript", "2026-03-21 15:30:00");
-        addJob("Python开发工程师", "腾讯", "深圳", "熟练使用Python，熟悉Django或Flask框架", "2026-03-20 09:15:00");
-        addJob("产品经理", "美团", "上海", "有互联网产品经验，熟悉产品设计流程", "2026-03-19 14:45:00");
-        addJob("UI设计师", "百度", "北京", "熟练使用Figma、Sketch等设计工具", "2026-03-18 11:20:00");
-    }
-    
-    // 添加岗位数据
-    private void addJob(String title, String company, String location, String requirements, String createdAt) {
-        Map<String, Object> job = new HashMap<>();
-        job.put("title", title);
-        job.put("company", company);
-        job.put("location", location);
-        job.put("requirements", requirements);
-        job.put("created_at", createdAt);
-        jobsData.add(job);
+
+    // 初始化数据库表和数据
+    private void initDatabase() {
+        try {
+            // 创建jobs表
+            String createTableSql = "CREATE TABLE IF NOT EXISTS jobs " +
+                                  "(id INT AUTO_INCREMENT PRIMARY KEY, " +
+                                  "title VARCHAR(255) NOT NULL, " +
+                                  "company VARCHAR(255) NOT NULL, " +
+                                  "location VARCHAR(255) NOT NULL, " +
+                                  "requirements TEXT, " +
+                                  "created_at DATETIME DEFAULT CURRENT_TIMESTAMP)";
+            jdbcTemplate.execute(createTableSql);
+
+            // 检查是否有数据
+            String countSql = "SELECT COUNT(*) FROM jobs";
+            Integer count = jdbcTemplate.queryForObject(countSql, Integer.class);
+
+            // 如果没有数据，插入模拟数据
+            if (count == 0) {
+                String[] insertSqls = {
+                    "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('Java开发工程师', '阿里巴巴', '杭州', '熟悉Java基础，熟练使用Spring Boot、MyBatis框架', '2026-03-22 10:00:00')",
+                    "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('前端开发工程师', '字节跳动', '北京', '熟悉Vue.js或React，熟练掌握HTML/CSS/JavaScript', '2026-03-21 15:30:00')",
+                    "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('Python开发工程师', '腾讯', '深圳', '熟练使用Python，熟悉Django或Flask框架', '2026-03-20 09:15:00')",
+                    "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('产品经理', '美团', '上海', '有互联网产品经验，熟悉产品设计流程', '2026-03-19 14:45:00')",
+                    "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('UI设计师', '百度', '北京', '熟练使用Figma、Sketch等设计工具', '2026-03-18 11:20:00')"
+                };
+
+                for (String sql : insertSqls) {
+                    jdbcTemplate.execute(sql);
+                }
+
+                System.out.println("✅ 数据库初始化完成，插入了5条模拟数据");
+            } else {
+                System.out.println("✅ 数据库已有数据，跳过初始化");
+            }
+        } catch (Exception e) {
+            System.error("❌ 数据库初始化失败:", e);
+        }
     }
 
     // 1. 搜索岗位 - 完全匹配你的表结构
@@ -53,20 +71,19 @@ public class JobRecommendationController {
     public SearchResponse searchJobs(@RequestParam String keyword) {
         System.out.println("🔍 搜索关键词: " + keyword);
 
-        // 内存搜索
-        List<Map<String, Object>> results = new ArrayList<>();
-        for (Map<String, Object> job : jobsData) {
-            String title = getStringValue(job, "title", "").toLowerCase();
-            String company = getStringValue(job, "company", "").toLowerCase();
-            String location = getStringValue(job, "location", "").toLowerCase();
-            String requirements = getStringValue(job, "requirements", "").toLowerCase();
-            String lowerKeyword = keyword.toLowerCase();
-            
-            if (title.contains(lowerKeyword) || company.contains(lowerKeyword) ||
-                location.contains(lowerKeyword) || requirements.contains(lowerKeyword)) {
-                results.add(job);
-            }
-        }
+        // SQL查询 - 使用正确的字段名 'title'
+        String sql = "SELECT * FROM jobs WHERE " +
+                "title LIKE ? OR " +
+                "company LIKE ? OR " +
+                "location LIKE ? OR " +
+                "requirements LIKE ? " +
+                "ORDER BY created_at DESC";
+
+        String searchPattern = "%" + keyword + "%";
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(
+                sql, searchPattern, searchPattern, searchPattern,
+                searchPattern
+        );
 
         System.out.println("✅ 找到 " + results.size() + " 个匹配岗位");
 
@@ -91,10 +108,13 @@ public class JobRecommendationController {
     // 2. 获取所有岗位
     @GetMapping("/jobs")
     public SearchResponse getAllJobs() {
-        System.out.println("📊 加载所有岗位: " + jobsData.size() + " 个");
+        String sql = "SELECT * FROM jobs ORDER BY created_at DESC";
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+
+        System.out.println("📊 加载所有岗位: " + results.size() + " 个");
 
         List<SearchResponse.JobInfo> jobInfos = new ArrayList<>();
-        for (Map<String, Object> row : jobsData) {
+        for (Map<String, Object> row : results) {
             jobInfos.add(new SearchResponse.JobInfo(
                     getStringValue(row, "title", ""),
                     0,  // 无匹配分数
@@ -116,31 +136,24 @@ public class JobRecommendationController {
                                       @RequestParam(required = false) String city) {
         System.out.println("🤖 AI推荐请求 - 技能: " + skills + ", 城市: " + city);
 
-        // 内存过滤
-        List<Map<String, Object>> results = new ArrayList<>();
-        for (Map<String, Object> job : jobsData) {
-            boolean match = true;
-            
-            if (skills != null && !skills.trim().isEmpty()) {
-                String lowerSkills = skills.toLowerCase();
-                String lowerRequirements = getStringValue(job, "requirements", "").toLowerCase();
-                if (!lowerRequirements.contains(lowerSkills)) {
-                    match = false;
-                }
-            }
-            
-            if (city != null && !city.trim().isEmpty()) {
-                String lowerCity = city.toLowerCase();
-                String lowerLocation = getStringValue(job, "location", "").toLowerCase();
-                if (!lowerLocation.contains(lowerCity)) {
-                    match = false;
-                }
-            }
-            
-            if (match) {
-                results.add(job);
-            }
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM jobs WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (skills != null && !skills.trim().isEmpty()) {
+            sqlBuilder.append(" AND requirements LIKE ?");
+            params.add("%" + skills + "%");
         }
+
+        if (city != null && !city.trim().isEmpty()) {
+            sqlBuilder.append(" AND location LIKE ?");
+            params.add("%" + city + "%");
+        }
+
+        sqlBuilder.append(" ORDER BY created_at DESC");
+
+        List<Map<String, Object>> results = jdbcTemplate.queryForList(
+                sqlBuilder.toString(), params.toArray()
+        );
 
         System.out.println("✅ AI推荐找到 " + results.size() + " 个匹配岗位");
 
