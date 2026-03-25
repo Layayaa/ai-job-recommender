@@ -1,9 +1,10 @@
 package com.laya.aijobrecommender.controller;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -20,14 +21,17 @@ public class JobRecommendationController {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    // 构造函数，初始化数据库表
+    // 构造函数
     public JobRecommendationController() {
-        initDatabase();
     }
 
     // 初始化数据库表和数据
+    @PostConstruct
     private void initDatabase() {
+        System.out.println("🔧 开始初始化数据库...");
         try {
+            System.out.println("🔧 检查jdbcTemplate是否注入: " + (jdbcTemplate != null));
+            
             // 创建jobs表
             String createTableSql = "CREATE TABLE IF NOT EXISTS jobs " +
                                   "(id INT AUTO_INCREMENT PRIMARY KEY, " +
@@ -36,14 +40,19 @@ public class JobRecommendationController {
                                   "location VARCHAR(255) NOT NULL, " +
                                   "requirements TEXT, " +
                                   "created_at DATETIME DEFAULT CURRENT_TIMESTAMP)";
+            System.out.println("🔧 执行建表SQL: " + createTableSql);
             jdbcTemplate.execute(createTableSql);
+            System.out.println("✅ 建表成功");
 
             // 检查是否有数据
             String countSql = "SELECT COUNT(*) FROM jobs";
+            System.out.println("🔧 执行计数SQL: " + countSql);
             Integer count = jdbcTemplate.queryForObject(countSql, Integer.class);
+            System.out.println("✅ 计数结果: " + count);
 
             // 如果没有数据，插入模拟数据
             if (count == 0) {
+                System.out.println("🔧 开始插入模拟数据...");
                 String[] insertSqls = {
                     "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('Java开发工程师', '阿里巴巴', '杭州', '熟悉Java基础，熟练使用Spring Boot、MyBatis框架', '2026-03-22 10:00:00')",
                     "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('前端开发工程师', '字节跳动', '北京', '熟悉Vue.js或React，熟练掌握HTML/CSS/JavaScript', '2026-03-21 15:30:00')",
@@ -52,8 +61,9 @@ public class JobRecommendationController {
                     "INSERT INTO jobs (title, company, location, requirements, created_at) VALUES ('UI设计师', '百度', '北京', '熟练使用Figma、Sketch等设计工具', '2026-03-18 11:20:00')"
                 };
 
-                for (String sql : insertSqls) {
-                    jdbcTemplate.execute(sql);
+                for (int i = 0; i < insertSqls.length; i++) {
+                    System.out.println("🔧 插入第" + (i+1) + "条数据");
+                    jdbcTemplate.execute(insertSqls[i]);
                 }
 
                 System.out.println("✅ 数据库初始化完成，插入了5条模拟数据");
@@ -61,7 +71,7 @@ public class JobRecommendationController {
                 System.out.println("✅ 数据库已有数据，跳过初始化");
             }
         } catch (Exception e) {
-            System.err.println("发生异常: " + e.getMessage());
+            System.err.println("❌ 发生异常: " + e.getMessage());
             e.printStackTrace(); // 可选，打印堆栈
         }
     }

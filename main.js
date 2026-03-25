@@ -235,7 +235,9 @@ async function handleSearch() {
 
     } catch (error) {
         console.error('搜索失败:', error);
-        showAlert('搜索失败，请稍后重试', 'danger');
+        showAlert('后端服务未连接，显示模拟数据', 'warning');
+        // 显示模拟数据
+        showMockData();
     }
 }
 
@@ -277,7 +279,9 @@ async function handleAIRecommend() {
 
     } catch (error) {
         console.error('推荐失败:', error);
-        showAlert('推荐失败，请稍后重试', 'danger');
+        showAlert('后端服务未连接，显示模拟数据', 'warning');
+        // 显示模拟数据
+        showMockData();
     }
 }
 
@@ -299,7 +303,7 @@ async function loadAllJobs() {
 
     } catch (error) {
         console.error('加载岗位失败:', error);
-        showAlert('加载岗位失败: ' + error.message, 'danger');
+        showAlert('后端服务未连接，显示模拟数据', 'warning');
         // 显示模拟数据，以便前端能够正常显示
         showMockData();
     }
