@@ -12,7 +12,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
 public class JobRecommendationController {
 
     @Autowired
@@ -62,7 +61,8 @@ public class JobRecommendationController {
                 System.out.println("✅ 数据库已有数据，跳过初始化");
             }
         } catch (Exception e) {
-            System.error("❌ 数据库初始化失败:", e);
+            System.err.println("发生异常: " + e.getMessage());
+            e.printStackTrace(); // 可选，打印堆栈
         }
     }
 
